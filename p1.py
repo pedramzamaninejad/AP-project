@@ -23,6 +23,24 @@ class Library:
                  book.loc[i]['keyword']) for i in range(len(book))
         ]
 
+    def add_book(self, name: str, year_published: str, writers: str, keyword: str) -> str:
+        self.books.append(Book(name, year_published, writers, keyword))
+
+        return "Book has been added successfuly"
+
+    def remove_book(self, name, year_published) -> str:
+        for i in self.books:
+            if i.name == name and year_published == i.publish_year:
+                self.books.remove(i)
+                return "Book has been removed successfully"
+        return "Book not found"
+
+    def book_info(self, name) -> dict | str:
+        for i in self.books:
+            if i.name == name:
+                return i.info()
+        return "Book not found"
+
     def __len__(self) -> int:
         return len(self.books)
 
