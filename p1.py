@@ -6,7 +6,7 @@ class Library:
     def __init__(self, path: str) -> None:
         self.path = path
         self.name = self.path.split('/')[-1]
-        self.books: list[dict] = []
+        self.books: list[Book] = []
 
     def read_book_from_csv(self) -> None:
         import pandas as pd
@@ -14,11 +14,11 @@ class Library:
 
         os.chdir(f'{self.path}')
         for i in os.listdir():
-            book = pd.read_csv(self.path + "/" + i, header=0, delimiter=' ')
+            book = pd.read_csv(self.path + "/" + i, header=0, delimiter=',')
 
         self.books += [
             Book(book.loc[i]['name'],
-                 book.loc[i]['year_published'],
+                 book.loc[i]['publish_year'],
                  book.loc[i]['writers'],
                  book.loc[i]['keyword']) for i in range(len(book))
         ]
@@ -43,6 +43,21 @@ class Library:
 
     def __len__(self) -> int:
         return len(self.books)
+
+    def __del__(self):
+        import pandas as pd
+
+        data = {'name': [], 'publish_year': [], 'writers': [], 'keyword': []}
+        for book in self.books:
+            book_info = book.info()
+            data['name'].append(book_info['name'])
+            data['publish_year'].append(book_info['year_published'])
+            data['writers'].append(book_info['writers'])
+            data['keyword'].append(book_info['keyword'])
+
+        df = pd.DataFrame(data)
+
+        df.to_csv(self.path + "/" + "books.csv", sep=',', encoding='utf-8')
 
 
 class Book:
