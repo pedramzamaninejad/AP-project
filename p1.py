@@ -1,27 +1,46 @@
 class UniLibManager:
-    ...
+    def __init__(self, path: str) -> None:
+        self.path = path
+        self.name = self.path.split('/')[-1]
+        self.libraries: list[Library] = self.__read_libraries_from_dir()
+
+    def __read_libraries_from_dir(self) -> list:
+        import os
+
+        libraries = []
+
+        os.chdir(self.path)
+        for i in os.listdir():
+            if os.path.isdir(i) and not i.startswith('.') and not i == '__pycache__':
+                libraries.append(Library(self.path + '/' + i))
+
+        return libraries
 
 
 class Library:
     def __init__(self, path: str) -> None:
         self.path = path
         self.name = self.path.split('/')[-1]
-        self.books: list[Book] = []
+        self.books: list[Book] = self.__read_book_from_csv()
 
-    def read_book_from_csv(self) -> None:
+    def __read_book_from_csv(self) -> list:
         import pandas as pd
         import os
 
-        os.chdir(f'{self.path}')
+        books = []
+
+        os.chdir(self.path)
         for i in os.listdir():
             book = pd.read_csv(self.path + "/" + i, header=0, delimiter=',')
 
-        self.books += [
+        books += [
             Book(book.loc[i]['name'],
                  book.loc[i]['publish_year'],
                  book.loc[i]['writers'],
                  book.loc[i]['keyword']) for i in range(len(book))
         ]
+
+        return books
 
     def add_book(self, name: str, year_published: str, writers: str, keyword: str) -> str:
         self.books.append(Book(name, year_published, writers, keyword))
