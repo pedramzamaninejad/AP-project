@@ -1,3 +1,8 @@
+import os
+import shutil
+import pandas as pd
+
+
 class UniLibManager:
     def __init__(self, path: str) -> None:
         self.path = path
@@ -5,8 +10,7 @@ class UniLibManager:
         self.libraries: list[Library] = self.__read_libraries_from_dir()
 
     def __read_libraries_from_dir(self) -> list:
-        import os
-
+        
         libraries = []
 
         os.chdir(self.path)
@@ -16,6 +20,41 @@ class UniLibManager:
 
         return libraries
 
+    def add_library(self, name: str) -> str:
+        os.chdir(self.path)
+        try:
+            os.mkdir(name)
+            return f"library {name} has been added successfully"
+        except FileExistsError:
+            return f"Library {name} already existed"
+        except Exception as e:
+            return f"An error occurred: {e}"
+        
+    def remove_library(self, name: str) -> str:
+        os.chdir(self.path)
+        try: 
+            shutil.rmtree(name)
+            return f"Library {name} has been removed successfully."
+        except FileNotFoundError:
+            return f"Library {name} does not exist."
+        except Exception as e:
+            return f"An error occurred: {e}"
+        
+    def update_library(self, current_name: str, new_name: str) -> str:
+        os.chdir(self.path)
+
+        try:
+            os.rename(current_name, new_name)
+            return f"Library {current_name} has been changed to {new_name}"
+        except FileNotFoundError:
+            return f"Library {current_name} does not exists"
+        except Exception as e:
+            return f"An error occurred: {e}"
+        
+    def __del__(self):
+        for library in self.libraries:
+            del library
+
 
 class Library:
     def __init__(self, path: str) -> None:
@@ -24,8 +63,6 @@ class Library:
         self.books: list[Book] = self.__read_book_from_csv()
 
     def __read_book_from_csv(self) -> list:
-        import pandas as pd
-        import os
 
         books = []
 
@@ -39,7 +76,7 @@ class Library:
                  book.loc[i]['writers'],
                  book.loc[i]['keyword']) for i in range(len(book))
         ]
-
+ 
         return books
 
     def add_book(self, name: str, year_published: str, writers: str, keyword: str) -> str:
@@ -64,7 +101,6 @@ class Library:
         return len(self.books)
 
     def __del__(self):
-        import pandas as pd
 
         data = {'name': [], 'publish_year': [], 'writers': [], 'keyword': []}
         for book in self.books:
