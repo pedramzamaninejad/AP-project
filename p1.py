@@ -1,6 +1,8 @@
 import os
 import shutil
+from typing import Tuple
 import pandas as pd
+import atexit
 
 
 class UniLibManager:
@@ -56,11 +58,12 @@ class UniLibManager:
             del library
 
 
-class Library:
+class Library(object):
     def __init__(self, path: str) -> None:
         self.path = path
         self.name = self.path.split('/')[-1]
         self.books: list[Book] = self.__read_book_from_csv()
+        atexit.register(self.__save_books_to_csv)
 
     def __read_book_from_csv(self) -> list:
 
@@ -68,51 +71,58 @@ class Library:
 
         os.chdir(self.path)
         for i in os.listdir():
-            book = pd.read_csv(self.path + "/" + i, header=0, delimiter=',')
+            book = pd.read_csv(os.path.join(self.path, i), header=0, delimiter='\t')
 
         books += [
-            Book(book.loc[i]['name'],
-                 book.loc[i]['publish_year'],
-                 book.loc[i]['writers'],
-                 book.loc[i]['keyword']) for i in range(len(book))
+            Book(book.iloc[i]['name'],
+                 book.iloc[i]['publish_year'],
+                 book.iloc[i]['writers'],
+                 book.iloc[i]['keyword']) for i in range(len(book))
         ]
  
         return books
 
-    def add_book(self, name: str, year_published: str, writers: str, keyword: str) -> str:
+    def add_book(self, name: str, year_published: str, writers: str, keyword: str) -> tuple[str, int]:
         self.books.append(Book(name, year_published, writers, keyword))
 
-        return "Book has been added successfuly"
+        return "Book has been added successfuly", 201
 
-    def remove_book(self, name, year_published) -> str:
+    def remove_book(self, name, year_published) -> tuple[str, int]:
         for i in self.books:
-            if i.name == name and year_published == i.publish_year:
+            if i.name == name and year_published == i.published_year:
                 self.books.remove(i)
-                return "Book has been removed successfully"
-        return "Book not found"
+                return "Book has been removed successfully", 201
+        return "Book not found", 404
 
-    def book_info(self, name) -> dict | str:
+    def book_info(self, name) -> dict | Tuple[str, int]:
         for i in self.books:
             if i.name == name:
                 return i.info()
-        return "Book not found"
+        return "Book not found", 404
 
     def __len__(self) -> int:
         return len(self.books)
 
-    def __del__(self):
+    def __save_books_to_csv(self):
+        import pandas as pd # To desolve the a problem
 
-        data = {'name': [], 'publish_year': [], 'writers': [], 'keyword': []}
+        data = {
+            'name': [],
+            'publish_year': [], 
+            'writers': [], 
+            'keyword': []
+        } 
         for book in self.books:
-            book_info = book.info()
-            data['name'].append(book_info['name'])
-            data['publish_year'].append(book_info['year_published'])
-            data['writers'].append(book_info['writers'])
-            data['keyword'].append(book_info['keyword'])
 
+            data['name'].append(book.name)
+            data['publish_year'].append(book.published_year)
+            data['writers'].append(book.writers)
+            data['keyword'].append(book.key_word)
         df = pd.DataFrame(data)
-
-        df.to_csv(self.path + "/" + "books.csv", sep=',', encoding='utf-8')
+        df.to_csv(os.path.join(self.path, "books.csv"), sep='\t', encoding='utf-8', index=False)
+        
+    def __del__(self):
+        print(f'Library: {self.name} has been deleted succesfully')
 
 
 class Book:

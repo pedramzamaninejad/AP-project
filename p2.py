@@ -1,6 +1,7 @@
 # Ludo game
 
 import tkinter as tk
+from func import roll_dice
 
 
 play_area = [3, 3, 3, 3, 11, 10, 11, 3, 3, 3, 3]
@@ -9,6 +10,10 @@ window = tk.Tk()
 
 window.title('Mench Game')
 window.geometry('1000x1000')
+
+content = tk.Label(window, text='Wellcome to my Ludo game')
+content.pack(pady=100, padx=100)
+
 
 frame_game = tk.Frame(window, bg='black')
 
@@ -35,7 +40,7 @@ for index, times in enumerate(play_area):
                     tk.Button(frame_game, text='', background='green', fg='black', height=2, width=3).grid(row=index, column=i + 2)
                 # TODO: Fix this shit for the dice and create command for it
                 else:
-                    tk.Button(frame_game, text='Roll dice', background='purple', height=2, width=3).grid(row=index, column=i + 2)
+                    tk.Button(frame_game, text='Roll dice', background='purple', height=2, width=3, command=roll_dice).grid(row=index, column=i + 2)
         if index > len(play_area) // 2:
             match times:
                 case 3:
@@ -56,6 +61,4 @@ for index, times in enumerate(play_area):
 
 frame_game.pack(expand=True, side=tk.LEFT)
 
-
 window.mainloop()
-
