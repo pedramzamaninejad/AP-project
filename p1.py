@@ -98,23 +98,43 @@ class Library(object):
         return books
 
     def add_book(self, name: str, year_published: str, writers: str, keyword: str) -> tuple[str, int]:
-        self.books.append(Book(name, year_published, writers, keyword))
-
-        return "Book has been added successfuly", 201
+        if name not in self.books:
+            self.books.append(Book(name, year_published, writers, keyword))
+            return "Book has been added successfuly", 201
+        elif name in self.books:
+            locate = self.books.index(name)
+            obj = self.books[locate]
+            if obj.published_year == year_published:
+                return f"A book named with this name and publish year already exist", 403
 
     def remove_book(self, name, year_published) -> tuple[str, int]:
-        for i in self.books:
-            if i.name == name and year_published == i.published_year:
+        for i, obj in enumerate(self.books):
+            if obj.published_year == year_published and obj.name == name:
                 self.books.remove(i)
-                return "Book has been removed successfully", 201
-        return "Book not found", 404
+                return f"Book [{name}] Was removed", 201
 
-    def book_info(self, name) -> Tuple[str | dict, int]:
-        for i in self.books:
-            if i.name == name:
-                return i.info(), 201
-        return "Book not found", 404
+        return f"Book [{name}] published in [{year_published}] was not found", 404
 
+    def book_info(self, name, publish_year=None) -> Tuple[str | dict, int]:
+        if publish_year is not None:
+            for i in self.books:
+                if i == name and i.published_year == publish_year:
+                    return i.info(), 201
+                else: 
+                    return f'probebly book [{name}] in [{publish_year}] was not found', 404
+        
+        elif name in self.books and publish_year is None:
+            return self.books[self.books.index(name)].info(), 201
+        
+        return "Book not found", 404
+    
+    def book_edit(self, name, publish_year, new_name=None, new_publish_year=None, new_writers=None, new_keyword=None):
+        for i, obj in enumerate(self.books):
+            if obj.published_year == publish_year and obj.name == name:
+                obj.update(new_name, new_publish_year, new_writers, new_keyword), 201
+                return f"Changes has been made", 201
+        return f'Book [{name}] Not found', 404
+        
     def __len__(self) -> int:
         return len(self.books)
 
@@ -162,3 +182,6 @@ class Book:
             self.writers = writers
         if keyword is not None:
             self.key_word = keyword
+
+    def __repr__(self) -> str:
+        return self.name
