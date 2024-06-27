@@ -6,13 +6,13 @@ import atexit
 
 
 class UniLibManager:
+
     def __init__(self, path: str) -> None:
         self.path = path
         self.name = self.path.split('/')[-1]
         self.libraries: list[Library] = self.__read_libraries_from_dir()
 
     def __read_libraries_from_dir(self) -> list:
-        
         libraries = []
 
         os.chdir(self.path)
@@ -22,36 +22,50 @@ class UniLibManager:
 
         return libraries
 
-    def add_library(self, name: str) -> str:
+    def add_library(self, name: str) -> Tuple[str, int]:
         os.chdir(self.path)
         try:
             os.mkdir(name)
-            return f"library {name} has been added successfully"
+            return f"library {name} has been added successfully", 201
+        
         except FileExistsError:
-            return f"Library {name} already existed"
+            return f"Library {name} already existed", 404
+        
         except Exception as e:
-            return f"An error occurred: {e}"
+            return f"An error occurred: {e}", 500
         
     def remove_library(self, name: str) -> str:
         os.chdir(self.path)
         try: 
             shutil.rmtree(name)
-            return f"Library {name} has been removed successfully."
-        except FileNotFoundError:
-            return f"Library {name} does not exist."
-        except Exception as e:
-            return f"An error occurred: {e}"
+            return f"Library {name} has been removed successfully.", 201
         
+        except FileNotFoundError:
+            return f"Library {name} does not exist.", 404
+        
+        except Exception as e:
+            return f"An error occurred: {e}", 500
+        
+    def name_libraries(self):
+        library_name = []
+
+        for library in self.libraries:
+            library_name.append(library.name)
+        
+        return library_name
+
     def update_library(self, current_name: str, new_name: str) -> str:
         os.chdir(self.path)
 
         try:
             os.rename(current_name, new_name)
-            return f"Library {current_name} has been changed to {new_name}"
+            return f"Library {current_name} has been changed to {new_name}", 201
+        
         except FileNotFoundError:
-            return f"Library {current_name} does not exists"
+            return f"Library {current_name} does not exists", 404
+        
         except Exception as e:
-            return f"An error occurred: {e}"
+            return f"An error occurred: {e}", 500
         
     def __del__(self):
         for library in self.libraries:
@@ -59,6 +73,7 @@ class UniLibManager:
 
 
 class Library(object):
+
     def __init__(self, path: str) -> None:
         self.path = path
         self.name = self.path.split('/')[-1]
@@ -94,10 +109,10 @@ class Library(object):
                 return "Book has been removed successfully", 201
         return "Book not found", 404
 
-    def book_info(self, name) -> dict | Tuple[str, int]:
+    def book_info(self, name) -> Tuple[str | dict, int]:
         for i in self.books:
             if i.name == name:
-                return i.info()
+                return i.info(), 201
         return "Book not found", 404
 
     def __len__(self) -> int:
