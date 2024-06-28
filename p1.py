@@ -26,6 +26,7 @@ class UniLibManager:
         os.chdir(self.path)
         try:
             os.mkdir(name)
+            self.libraries.append(Library(os.path.join(self.path, name)))
             return f"library {name} has been added successfully", 201
         
         except FileExistsError:
@@ -38,6 +39,7 @@ class UniLibManager:
         os.chdir(self.path)
         try: 
             shutil.rmtree(name)
+            self.libraries.remove(self.libraries.index(name))
             return f"Library {name} has been removed successfully.", 201
         
         except FileNotFoundError:
@@ -47,12 +49,13 @@ class UniLibManager:
             return f"An error occurred: {e}", 500
         
     def name_libraries(self):
-        library_name = []
+    #     library_name = []
 
-        for library in self.libraries:
-            library_name.append(library.name)
+    #     for library in self.libraries:
+    #         library_name.append(library.name)
         
-        return library_name
+    #     return library_name
+        return self.libraries
 
     def update_library(self, current_name: str, new_name: str) -> str:
         os.chdir(self.path)
@@ -135,9 +138,6 @@ class Library(object):
                 return f"Changes has been made", 201
         return f'Book [{name}] Not found', 404
         
-    def __len__(self) -> int:
-        return len(self.books)
-
     def __save_books_to_csv(self):
         import pandas as pd # To desolve the a problem
 
@@ -155,7 +155,13 @@ class Library(object):
             data['keyword'].append(book.key_word)
         df = pd.DataFrame(data)
         df.to_csv(os.path.join(self.path, "books.csv"), sep='\t', encoding='utf-8', index=False)
-        
+    
+    def __len__(self) -> int:
+        return len(self.books)
+
+    def __repr__(self) -> str:
+        return self.name
+
     def __del__(self):
         print(f'Library: {self.name} has been deleted succesfully')
 
