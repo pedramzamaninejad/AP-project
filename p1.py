@@ -118,20 +118,21 @@ class Library(object):
 
         return f"Book [{name}] published in [{year_published}] was not found", 404
 
-    def book_info(self, name, publish_year=None) -> Tuple[str | dict, int]:
-        if publish_year is not None:
+    def book_info(self, name, publish_year='') -> Tuple[str | dict, int]:
+        print(name, publish_year)
+        if publish_year != '':
             for i in self.books:
-                if i == name and i.published_year == publish_year:
+                if i.name == name and i.published_year == int(publish_year):
                     return i.info(), 201
-                else: 
-                    return f'probebly book [{name}] in [{publish_year}] was not found', 404
+            
+            return f'probebly book [{name}] in [{publish_year}] was not found', 404
         
         elif name in self.books and publish_year is None:
             return self.books[self.books.index(name)].info(), 201
         
         return "Book not found", 404
     
-    def book_edit(self, name, publish_year, new_name=None, new_publish_year=None, new_writers=None, new_keyword=None):
+    def book_edit(self, name, publish_year, new_name='', new_publish_year='', new_writers='', new_keyword=''):
         for i, obj in enumerate(self.books):
             if obj.published_year == publish_year and obj.name == name:
                 obj.update(new_name, new_publish_year, new_writers, new_keyword), 201
@@ -160,7 +161,7 @@ class Library(object):
         return len(self.books)
 
     def __repr__(self) -> str:
-        return self.name
+        return str(self.name)
 
     def __del__(self):
         print(f'Library: {self.name} has been deleted succesfully')
@@ -179,14 +180,14 @@ class Book:
                 'writers': self.writers,
                 'keyword': self.key_word}
 
-    def update(self, name=None, published_year=None, writers=None, keyword=None):
-        if name is not None:
+    def update(self, name='', published_year='', writers='', keyword=''):
+        if name != '':
             self.name = name
-        if published_year is not None:
+        if published_year != '':
             self.published_year = published_year
-        if writers is not None:
+        if writers != '':
             self.writers = writers
-        if keyword is not None:
+        if keyword != '':
             self.key_word = keyword
 
     def __repr__(self) -> str:
