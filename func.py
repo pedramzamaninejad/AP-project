@@ -1,11 +1,38 @@
 import random
-from p1 import Book, Library, UniLibManager
+from typing import Tuple
+from p1 import Library, UniLibManager
 from termcolor import colored
 
 def roll_dice() -> int:
     result = random.randint(1,6)
     return result
 
+
+def sort_data_ludo(data: list(Tuple[int, int])) -> list(Tuple[int, int]): # type: ignore
+    def change(li):
+        return li[::-1]
+    start_1 = 0, 8
+    sort = []
+    sort.append(start_1)
+    j_nsort = []
+    for i, j in data[3:]:
+        if j >= start_1[1] and i > start_1[0]:
+            if i != 6:
+                sort.append((i, j))
+            else:
+                j_nsort.append((i,j))
+                if j == 12:
+                    row_sort = change(j_nsort)
+                    sort.extend(row_sort)
+    for i in sort:
+        data.remove(i)
+
+    sort.append((10, 7))
+    data.reverse()
+    data[-1], data[-2] = data[-2], data[-1]
+    data[10], data[11], data[12], data[13], data[14] = data[14], data[13], data[12], data[11], data[10]
+    sort.extend(data)
+    return sort
 
 def pprint(message: str, *args, **kwargs) -> None:
     print(colored(message, *args, **kwargs))
