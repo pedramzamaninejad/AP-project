@@ -39,9 +39,9 @@ university = run_manager(path)
 
 while True:
     stage = get_stage()
-    if 1 <= int(stage) <= 7:
+    if 1 <= int(stage) <= 7 and int(stage) != 2:
         pprint('To do these stuff you need to chose The library', 'red', attrs=['bold'])
-        pprint(f'{university.libraries}', 'blue')
+        print(*university.libraries, sep=' / ', end='.\n')
         time.sleep(1)
         pprint('Chose the library\n(mind the spelling): ')
         lib_name = input()
@@ -55,9 +55,6 @@ while True:
                 new_name = input()
                 current_name = library.name
                 print(university.update_library(current_name=current_name, new_name=new_name)[0])
-            
-            case '2':
-                pprint(f'Here are The Libraries {university.name_libraries()}')
 
             case '3':
                 pprint("Which Library do you want to delete: ", 'yellow', attrs=['underline'])
@@ -99,7 +96,7 @@ while True:
                 if code != 201:
                     pprint(message, 'red', attrs=['bold'])
                 else:
-                    pprint(message, 'green', attrs=['underline'])
+                    pprint(message, 'green')
 
             case '7':
                 pprint('Which book do you want to delete', 'yellow')
@@ -120,6 +117,10 @@ while True:
                     pprint(message, 'red', attrs=['bold'])
                 else:
                     pprint(message, 'green', attrs=['underline'])
+
+            case '2':
+                print(*university.name_libraries(), sep=' / ', end='.\n')
+
             case '8':
                 pprint("Good buy", 'blue')
                 pprint("Best Wishes from :", 'green')

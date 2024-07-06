@@ -11,14 +11,15 @@ class UniLibManager:
         self.path = path
         self.name = self.path.split('/')[-1]
         self.libraries: list[Library] = self.__read_libraries_from_dir()
+        atexit.register(self.__save_library_items)
 
     def __read_libraries_from_dir(self) -> list:
         libraries = []
 
         os.chdir(self.path)
         for i in os.listdir():
-            if os.path.isdir(i) and not i.startswith('.') and not i == '__pycache__':
-                libraries.append(Library(self.path + '/' + i))
+            if not i.startswith('.') and not i == '__pycache__':
+                libraries.append(Library(os.path.join(self.path, i)))
 
         return libraries
 
@@ -27,6 +28,14 @@ class UniLibManager:
         try:
             os.mkdir(name)
             self.libraries.append(Library(os.path.join(self.path, name)))
+            data = {
+                'name': [],
+                'publish_year': [], 
+                'writers': [], 
+                'keyword': []
+            }  
+            df = pd.DataFrame(data)
+            df.to_csv(os.path.join(name, "books.csv"), sep='\t', encoding='utf-8', index=False)
             return f"library {name} has been added successfully", 201
         
         except FileExistsError:
@@ -70,7 +79,11 @@ class UniLibManager:
         except Exception as e:
             return f"An error occurred: {e}", 500
         
-    def __del__(self):
+    # def __del__(self):
+    #     print(self.libraries)
+    #     for library in self.libraries:
+    #         del library
+    def __save_library_items(self):
         for library in self.libraries:
             del library
 
@@ -90,13 +103,13 @@ class Library(object):
         os.chdir(self.path)
         for i in os.listdir():
             book = pd.read_csv(os.path.join(self.path, i), header=0, delimiter='\t')
-
-        books += [
-            Book(book.iloc[i]['name'],
-                 book.iloc[i]['publish_year'],
-                 book.iloc[i]['writers'],
-                 book.iloc[i]['keyword']) for i in range(len(book))
-        ]
+        
+            books += [
+                Book(book.iloc[i]['name'],
+                    book.iloc[i]['publish_year'],
+                    book.iloc[i]['writers'],
+                    book.iloc[i]['keyword']) for i in range(len(book))
+            ]
  
         return books
 
@@ -119,18 +132,18 @@ class Library(object):
         return f"Book [{name}] published in [{year_published}] was not found", 404
 
     def book_info(self, name, publish_year='') -> Tuple[str | dict, int]:
-        print(name, publish_year)
         if publish_year != '':
+            print("Not Empty")
             for i in self.books:
                 if i.name == name and i.published_year == int(publish_year):
                     return i.info(), 201
             
             return f'probebly book [{name}] in [{publish_year}] was not found', 404
-        
-        elif name in self.books and publish_year is None:
-            return self.books[self.books.index(name)].info(), 201
-        
-        return "Book not found", 404
+        else:
+            for i in self.books:
+                if name == i.name:
+                    return i.info(), 201
+            return "Book not found", 404
     
     def book_edit(self, name, publish_year, new_name='', new_publish_year='', new_writers='', new_keyword=''):
         for i, obj in enumerate(self.books):
